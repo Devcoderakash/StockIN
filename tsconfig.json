@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./frontend" },
+    { "path": "./backend" }
+  ],
+  "exclude": ["supabase", "node_modules", "dist"]
+}

@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  * {
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Polished subtle scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Hide scrollbars for clean horizontal tab rows on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Document sharpness */
+#printable-invoice,
+#printable-quotation {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* Print specific styles for realistic GST invoice output and reports */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 15mm;
+  }
+
+  body {
+    background: white !important;
+    color: #111827 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print,
+  aside,
+  header,
+  nav,
+  button,
+  .toast-container {
+    display: none !important;
+  }
+
+  body:has(#printable-invoice) *,
+  body:has(#printable-quotation) * {
+    visibility: hidden;
+  }
+
+  body:has(#printable-invoice) #printable-invoice,
+  body:has(#printable-invoice) #printable-invoice *,
+  body:has(#printable-quotation) #printable-quotation,
+  body:has(#printable-quotation) #printable-quotation * {
+    visibility: visible;
+  }
+
+  body:has(#printable-invoice) #printable-invoice,
+  body:has(#printable-quotation) #printable-quotation {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+}
+

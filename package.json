@@ -1,0 +1,22 @@
+{
+  "name": "stockin-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "bun --cwd frontend dev",
+    "dev:frontend": "bun --cwd frontend dev",
+    "dev:backend": "bun --cwd backend dev",
+    "build": "bun --cwd frontend build && bun --cwd backend build",
+    "build:frontend": "bun --cwd frontend build",
+    "build:backend": "bun --cwd backend build",
+    "lint": "bun --cwd frontend lint",
+    "typecheck": "bun x tsc -b frontend && bun run --cwd backend build",
+    "test": "bun test",
+    "test:unit": "bun test frontend/src/utils/__tests__",
+    "test:integration": "bun test frontend/src/features frontend/src/services",
+    "test:coverage": "bun test --coverage"
+  }
+}

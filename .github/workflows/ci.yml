@@ -1,0 +1,36 @@
+name: StockIN CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-and-test:
+    name: Lint, Typecheck, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Lint
+        run: bun run lint
+
+      - name: Run Typecheck
+        run: bun run typecheck
+
+      - name: Run Automated Test Suites
+        run: bun test
+
+      - name: Verify Production Build
+        run: bun run build

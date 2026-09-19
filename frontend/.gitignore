@@ -1,0 +1,11 @@
+# Local environment files (NEVER commit credentials)
+*.local
+.env
+.env.*
+!.env.example
+
+# Dependencies & build
+node_modules
+dist
+dist-ssr
+*.tsbuildinfo
