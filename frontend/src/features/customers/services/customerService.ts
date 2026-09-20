@@ -59,8 +59,12 @@ export async function fetchCustomers(): Promise<Customer[]> {
 }
 
 export async function insertCustomer(c: Customer): Promise<void> {
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = c.userId || userData.user?.id;
+
   const { error } = await supabase.from('customers').insert({
     id:           c.id,
+    user_id:      userId,
     name:         c.name,
     company_name: c.companyName || null,
     phone:        c.phone || null,

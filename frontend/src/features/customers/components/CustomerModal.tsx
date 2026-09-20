@@ -71,7 +71,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -90,7 +90,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
     if (customerToEdit) {
       updateCustomer(customerToEdit.id, payload);
     } else {
-      addCustomer(payload);
+      await addCustomer(payload);
     }
 
     onClose();

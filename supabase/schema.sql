@@ -735,11 +735,37 @@ BEGIN
   FOR UPDATE;
 
   IF NOT FOUND THEN
-    RETURN jsonb_build_object(
-      'success', false,
-      'error_code', 'CUSTOMER_NOT_FOUND',
-      'error', 'Customer not found or does not belong to the current user.'
-    );
+    -- Resilient fallback: auto-create or upsert customer using invoice details
+    IF v_customer_id IS NOT NULL AND v_customer_id <> '' THEN
+      INSERT INTO public.customers (
+        id, user_id, name, company_name, phone, email, address, gstin,
+        total_orders, total_spent, outstanding, status
+      ) VALUES (
+        v_customer_id,
+        v_user_id,
+        COALESCE(NULLIF(TRIM(v_invoice->>'customer_name'), ''), 'Customer'),
+        NULLIF(TRIM(v_invoice->>'customer_company'), ''),
+        NULLIF(TRIM(v_invoice->>'customer_phone'), ''),
+        NULLIF(TRIM(v_invoice->>'customer_email'), ''),
+        NULLIF(TRIM(v_invoice->>'customer_address'), ''),
+        NULLIF(TRIM(v_invoice->>'customer_gstin'), ''),
+        0, 0, 0, 'active'
+      )
+      ON CONFLICT (id) DO UPDATE
+        SET name = EXCLUDED.name
+      RETURNING
+        id, name, company_name, phone, email, address, gstin,
+        total_orders, total_spent, outstanding
+      INTO v_customer;
+    END IF;
+
+    IF v_customer.id IS NULL THEN
+      RETURN jsonb_build_object(
+        'success', false,
+        'error_code', 'CUSTOMER_NOT_FOUND',
+        'error', 'Customer not found or does not belong to the current user.'
+      );
+    END IF;
   END IF;
 
   -- ── 3. Deterministic Product Locking (Deadlock Prevention) ─────────────────

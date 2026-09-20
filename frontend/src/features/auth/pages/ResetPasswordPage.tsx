@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Boxes, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Zap, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
@@ -108,7 +108,7 @@ export const ResetPasswordPage: React.FC = () => {
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center text-center space-y-4 max-w-xs">
           <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
-            <Boxes className="w-8 h-8" />
+            <Zap className="w-8 h-8 fill-white text-white" />
           </div>
           <div>
             <h2 className="text-base font-bold text-slate-900 tracking-tight">StockIN</h2>
@@ -126,11 +126,16 @@ export const ResetPasswordPage: React.FC = () => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
-            <Boxes className="w-5 h-5" />
+            <Zap className="w-5 h-5 text-white fill-white" />
           </div>
           <div>
-            <span className="text-base font-extrabold text-slate-900 tracking-tight">StockIN</span>
-            <p className="text-[10px] text-slate-400">Security &amp; Credentials</p>
+            <div className="flex items-center gap-1.5">
+              <span className="text-base font-extrabold text-slate-900 tracking-tight">StockIN</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-100">
+                PRO
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 font-medium">Security &amp; Credentials</p>
           </div>
         </div>
 

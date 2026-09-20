@@ -87,7 +87,7 @@ interface AppStateContextType {
   duplicateProduct: (id: string) => void;
 
   // Customers
-  addCustomer: (customer: Omit<Customer, 'id' | 'totalOrders' | 'totalSpent' | 'outstanding' | 'createdAt'>) => void;
+  addCustomer: (customer: Omit<Customer, 'id' | 'totalOrders' | 'totalSpent' | 'outstanding' | 'createdAt'>) => Promise<Customer>;
   updateCustomer: (id: string, updates: Partial<Customer>) => void;
   deleteCustomer: (id: string) => void;
 
@@ -429,9 +429,9 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // CUSTOMERS
   // ─────────────────────────────────────────────────────────────────────────
 
-  const addCustomer = (
+  const addCustomer = async (
     data: Omit<Customer, 'id' | 'totalOrders' | 'totalSpent' | 'outstanding' | 'createdAt'>
-  ) => {
+  ): Promise<Customer> => {
     const id = `cust-${Date.now().toString().slice(-6)}`;
     const newCust: Customer = {
       ...data,
@@ -443,10 +443,16 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       createdAt: new Date().toISOString().split('T')[0],
     };
     setCustomers((prev) => [newCust, ...prev]);
-    dbInsertCustomer(newCust).catch(() =>
-      showToast('Sync error', `${newCust.name} could not be saved to the database.`, 'error')
-    );
-    showToast('Customer added', `${newCust.name} added to customer directory.`);
+    try {
+      await dbInsertCustomer(newCust);
+      showToast('Customer added', `${newCust.name} added to customer directory.`);
+      return newCust;
+    } catch (err) {
+      console.error('[AppState] dbInsertCustomer error:', err);
+      setCustomers((prev) => prev.filter((c) => c.id !== id));
+      showToast('Sync error', `${newCust.name} could not be saved to the database.`, 'error');
+      throw err;
+    }
   };
 
   const updateCustomer = (id: string, updates: Partial<Customer>) => {

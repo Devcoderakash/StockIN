@@ -13,7 +13,7 @@ export const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
   onClose,
   onCustomerCreated,
 }) => {
-  const { addCustomer, customers } = useAppState();
+  const { addCustomer } = useAppState();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -27,8 +27,9 @@ export const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
   });
 
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() && !formData.companyName.trim()) {
       setError('Please provide at least a contact name or company name');
@@ -39,22 +40,32 @@ export const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
       return;
     }
 
-    addCustomer({
-      name: formData.name.trim() || formData.companyName.trim(),
-      companyName: formData.companyName.trim() || formData.name.trim(),
-      phone: formData.phone.trim(),
-      email: formData.email.trim() || 'info@client.com',
-      address: formData.address.trim() || 'Commercial Market',
-      city: formData.city.trim() || 'Bhopal',
-      state: formData.state.trim() || 'Madhya Pradesh',
-      gstin: formData.gstin.trim() || '23AAAAA0000A1Z5',
-      status: 'active',
-    });
+    setIsSubmitting(true);
+    setError('');
 
-    // Close and let billing select the newly created customer
-    const createdId = `cust-${customers.length + 1}`;
-    onCustomerCreated(createdId);
-    onClose();
+    try {
+      const createdCustomer = await addCustomer({
+        name: formData.name.trim() || formData.companyName.trim(),
+        companyName: formData.companyName.trim() || formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim() || 'info@client.com',
+        address: formData.address.trim() || 'Commercial Market',
+        city: formData.city.trim() || 'Bhopal',
+        state: formData.state.trim() || 'Madhya Pradesh',
+        gstin: formData.gstin.trim() || '23AAAAA0000A1Z5',
+        status: 'active',
+      });
+
+      if (createdCustomer?.id) {
+        onCustomerCreated(createdCustomer.id);
+      }
+      onClose();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create customer';
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -69,16 +80,18 @@ export const QuickCustomerModal: React.FC<QuickCustomerModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50 cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSubmit}
-            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5"
           >
-            Create Customer
+            {isSubmitting ? 'Creating...' : 'Create Customer'}
           </button>
         </>
       }
