@@ -433,8 +433,6 @@ export const SettingsPage: React.FC = () => {
               <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 overflow-hidden">
                 {[
                   { name: `${userDisplayName} (You)`, email: userEmail || 'user@business.com', role: 'Business Owner / Super Admin' },
-                  { name: 'Pawan Verma', email: 'billing@stockin.io', role: 'Billing Operator' },
-                  { name: 'Kishan Soni', email: 'warehouse@stockin.io', role: 'Warehouse & Stock Manager' },
                 ].map((user) => (
                   <div key={user.email} className="p-3.5 flex items-center justify-between hover:bg-slate-50">
                     <div>
