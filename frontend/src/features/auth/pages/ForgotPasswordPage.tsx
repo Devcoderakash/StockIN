@@ -51,21 +51,22 @@ export const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden selection:bg-blue-500/20 selection:text-blue-700">
-      {/* Soft ambient background gradients */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-100/60 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen text-slate-900 flex items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden selection:bg-blue-500/20 selection:text-blue-700">
+      {/* Enhanced Cloudscape Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none select-none">
+        <picture>
+          <source srcSet="/images/auth-bg.webp" type="image/webp" />
+          <img
+            src="/images/auth-bg.jpg"
+            alt="Sky and cloud background"
+            className="w-full h-full object-cover object-center transform scale-105"
+          />
+        </picture>
+        <div className="absolute inset-0 bg-gradient-to-b from-sky-950/15 via-transparent to-indigo-950/25" />
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
+      </div>
 
-      {/* Subtle modern dot-grid texture */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-40"
-        style={{
-          backgroundImage: `radial-gradient(#cbd5e1 1px, transparent 1px)`,
-          backgroundSize: '24px 24px',
-        }}
-      />
-
-      <div className="relative z-10 w-full max-w-md bg-white border border-slate-200/80 rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.06)] p-6 sm:p-10">
+      <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-2xl border border-white/80 rounded-3xl shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] p-6 sm:p-10">
         {/* Header Branding */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/25">

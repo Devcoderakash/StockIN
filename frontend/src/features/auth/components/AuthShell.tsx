@@ -23,24 +23,25 @@ export const AuthShell: React.FC<AuthShellProps> = ({
   footerBadgeText = 'Enterprise Cloud Security',
 }) => {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden selection:bg-blue-500/20 selection:text-blue-700">
-      {/* Soft ambient background gradients */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-100/60 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-sky-50/40 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Subtle modern dot-grid texture */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-40"
-        style={{
-          backgroundImage: `radial-gradient(#cbd5e1 1px, transparent 1px)`,
-          backgroundSize: '24px 24px',
-        }}
-      />
+    <div className="min-h-screen text-slate-900 flex items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden selection:bg-blue-500/20 selection:text-blue-700">
+      {/* Enhanced Cloudscape Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none select-none">
+        <picture>
+          <source srcSet="/images/auth-bg.webp" type="image/webp" />
+          <img
+            src="/images/auth-bg.jpg"
+            alt="Sky and cloud background"
+            className="w-full h-full object-cover object-center transform scale-105"
+          />
+        </picture>
+        {/* Soft atmospheric overlay: gentle gradient and subtle glass frost */}
+        <div className="absolute inset-0 bg-gradient-to-b from-sky-950/15 via-transparent to-indigo-950/25" />
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
+      </div>
 
       {/* Centered Authentication Card */}
       <div
-        className={`relative z-10 w-full ${cardMaxWidth} bg-white rounded-3xl border border-slate-200/80 shadow-[0_20px_50px_rgba(15,23,42,0.06)] overflow-hidden grid grid-cols-1 lg:grid-cols-12`}
+        className={`relative z-10 w-full ${cardMaxWidth} bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/80 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] overflow-hidden grid grid-cols-1 lg:grid-cols-12`}
       >
         {/* Left: Brand / Gradient Panel */}
         <div className="lg:col-span-5 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-6 sm:p-8 lg:p-12 flex flex-col justify-between text-white relative overflow-hidden">

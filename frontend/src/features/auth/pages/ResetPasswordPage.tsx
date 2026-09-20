@@ -121,8 +121,22 @@ export const ResetPasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-6 sm:p-10">
+    <div className="min-h-screen text-slate-900 flex items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden selection:bg-blue-500/20 selection:text-blue-700">
+      {/* Enhanced Cloudscape Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none select-none">
+        <picture>
+          <source srcSet="/images/auth-bg.webp" type="image/webp" />
+          <img
+            src="/images/auth-bg.jpg"
+            alt="Sky and cloud background"
+            className="w-full h-full object-cover object-center transform scale-105"
+          />
+        </picture>
+        <div className="absolute inset-0 bg-gradient-to-b from-sky-950/15 via-transparent to-indigo-950/25" />
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
+      </div>
+
+      <div className="relative z-10 max-w-md w-full mx-auto bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)] border border-white/80 p-6 sm:p-10">
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
