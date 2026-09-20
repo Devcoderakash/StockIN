@@ -16,7 +16,6 @@ import {
   Sparkles,
   TrendingUp,
   Receipt,
-  LockKeyhole,
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
@@ -83,12 +82,6 @@ export const LoginPage: React.FC = () => {
       setErrorMessage('Unable to sign in right now. Please verify your connection.');
       setIsLoading(false);
     }
-  };
-
-  const handleDemoFill = () => {
-    setEmail('admin@stockin.io');
-    setPassword('StockIN@Demo2026');
-    setErrorMessage(null);
   };
 
   return (
@@ -211,26 +204,14 @@ export const LoginPage: React.FC = () => {
         {/* Right Side: High-Performance Sign-In Form */}
         <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-slate-900/40">
           <div className="max-w-md w-full mx-auto">
-            {/* Header with Quick Fill Button */}
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight text-white">
-                  Welcome Back
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                  Access your enterprise dashboard and live registers.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleDemoFill}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 transition-all cursor-pointer shadow-xs active:scale-95"
-                title="Fill demo credentials"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Fill Demo</span>
-              </button>
+            {/* Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold tracking-tight text-white">
+                Welcome Back
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Access your enterprise dashboard and live registers.
+              </p>
             </div>
 
             {/* Success notification banner from previous flow */}
@@ -325,7 +306,7 @@ export const LoginPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Remember Me & Demo Fill Link (Mobile) */}
+              {/* Remember Me */}
               <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
@@ -336,14 +317,6 @@ export const LoginPage: React.FC = () => {
                   />
                   <span className="text-xs text-slate-400">Keep me signed in</span>
                 </label>
-
-                <button
-                  type="button"
-                  onClick={handleDemoFill}
-                  className="sm:hidden text-xs text-blue-400 hover:text-blue-300 font-medium"
-                >
-                  Fill Demo Credentials
-                </button>
               </div>
 
               {/* Submit CTA Button */}
@@ -365,21 +338,6 @@ export const LoginPage: React.FC = () => {
                 )}
               </button>
             </form>
-
-            {/* Quick Demo Help Note */}
-            <div className="mt-4 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 flex items-center justify-between text-[11px] text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <LockKeyhole className="w-3.5 h-3.5 text-blue-400" />
-                Testing? Click &quot;Fill Demo&quot; to populate.
-              </span>
-              <button
-                type="button"
-                onClick={handleDemoFill}
-                className="text-blue-400 hover:text-blue-300 font-semibold cursor-pointer underline"
-              >
-                Auto-fill
-              </button>
-            </div>
 
             {/* Switch to Register */}
             <div className="mt-6 pt-6 border-t border-slate-800 text-center">
