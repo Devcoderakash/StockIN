@@ -196,19 +196,38 @@ export const InvoiceDetailDrawer: React.FC<InvoiceDetailDrawerProps> = ({
           </h4>
           <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
             {invoice.items.map((item) => (
-              <div key={item.id} className="p-3 flex items-center justify-between hover:bg-slate-50">
-                <div>
-                  <p className="font-bold text-slate-900">{item.productName}</p>
-                  <p className="text-[11px] text-slate-500">
-                    SKU: {item.sku} • Qty: {item.quantity} × {formatCurrency(item.rate)}
-                  </p>
+              <div key={item.id} className="p-3 flex items-start justify-between hover:bg-slate-50 gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-slate-900">{item.productName}</p>
+                    {item.billingType === 'dimension' && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded">
+                        Dimension Based
+                      </span>
+                    )}
+                  </div>
+                  {item.billingType === 'dimension' ? (
+                    <div className="text-[11px] text-slate-600 font-mono space-y-0.5">
+                      <p>
+                        Size: <span className="font-semibold text-slate-800">{item.length} {item.dimensionUnit || 'ft'} × {item.width} {item.dimensionUnit || 'ft'}</span>
+                        {' '}• Area: <span className="font-semibold text-slate-800">{item.billableQuantity} {item.billingUnit || 'sq.ft'}</span>
+                      </p>
+                      <p className="text-slate-500">
+                        Qty: {item.quantity} unit(s) • Rate: {formatCurrency(item.rate)}/{item.billingUnit || 'sq.ft'}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-slate-500">
+                      SKU: {item.sku} • Qty: {item.quantity} × {formatCurrency(item.rate)}
+                    </p>
+                  )}
                   {item.taxRate > 0 && (
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-slate-400 block">
                       Tax: {item.taxRate}% ({formatCurrency(item.taxAmount)})
                     </span>
                   )}
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   <span className="font-bold text-slate-900 text-sm">
                     {formatCurrency(item.amount)}
                   </span>

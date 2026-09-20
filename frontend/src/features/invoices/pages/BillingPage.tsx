@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppState } from '@/context/AppStateContext';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -10,6 +10,7 @@ import { Modal } from '@/components/common/Modal';
 import { InvoiceItem, PaymentStatus, Invoice } from '@/types';
 import { UserPlus, Receipt, AlertCircle, Save } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
+import { calculateTotals, calculateLineItem } from '@/features/invoices/utils/invoiceCalculations';
 
 export const BillingPage: React.FC = () => {
   const { customers, products, addInvoice, generateInvoiceNumber, settings, showToast } = useAppState();
@@ -28,47 +29,89 @@ export const BillingPage: React.FC = () => {
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentTerms, setPaymentTerms] = useState(settings.paymentTerms || 'Due on Receipt');
 
+  // Helper to create an InvoiceItem from a product
+  const createItemFromProduct = (prod?: (typeof products)[0], defaultQty = 1): InvoiceItem => {
+    const isDim = prod?.billingType === 'dimension';
+    const length = isDim ? 2 : undefined;
+    const width = isDim ? 4 : undefined;
+    const rate = prod?.sellingPrice ?? 120;
+    const taxRate = prod?.taxRate ?? 18;
+    const calc = calculateLineItem(defaultQty, rate, 0, taxRate, {
+      billingType: prod?.billingType,
+      length,
+      width,
+    });
+
+    return {
+      id: `item-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+      productId: prod?.id || '',
+      productName: prod?.name || 'Custom Item',
+      sku: prod?.sku || 'SKU-001',
+      hsnCode: prod?.hsnCode || '94033010',
+      quantity: defaultQty,
+      rate,
+      discountPercent: 0,
+      taxRate,
+      taxAmount: calc.taxAmount,
+      amount: calc.totalAmount,
+      billingType: prod?.billingType || 'standard',
+      dimensionUnit: prod?.dimensionUnit || 'ft',
+      billingUnit: prod?.billingUnit || 'sq.ft',
+      length,
+      width,
+      billableQuantity: calc.billableQuantity,
+    };
+  };
+
   // Items
   const [items, setItems] = useState<InvoiceItem[]>(() => {
     const p1 = products.find((p) => p.stock > 0) || products[0];
-    const p2 = products.find((p) => p.id !== p1?.id && p.stock > 1) || products[1];
+    if (p1) {
+      return [createItemFromProduct(p1, 1)];
+    }
     return [
       {
         id: `item-${Date.now()}-1`,
-        productId: p1?.id || '',
-        productName: p1?.name || 'Item 1',
-        sku: p1?.sku || 'SKU-001',
-        hsnCode: p1?.hsnCode || '94033010',
+        productId: '',
+        productName: 'Select Item',
+        sku: 'SKU-001',
+        hsnCode: '94033010',
         quantity: 1,
-        rate: p1?.sellingPrice || 1000,
+        rate: 120,
         discountPercent: 0,
-        taxRate: p1?.taxRate || 18,
-        taxAmount: ((p1?.sellingPrice || 1000) * (p1?.taxRate || 18)) / 100,
-        amount:
-          (p1?.sellingPrice || 1000) +
-          ((p1?.sellingPrice || 1000) * (p1?.taxRate || 18)) / 100,
+        taxRate: 18,
+        taxAmount: 21.6,
+        amount: 141.6,
+        billingType: 'standard',
+        dimensionUnit: 'ft',
+        billingUnit: 'sq.ft',
       },
-      ...(p2
-        ? [
-            {
-              id: `item-${Date.now()}-2`,
-              productId: p2.id,
-              productName: p2.name,
-              sku: p2.sku,
-              hsnCode: p2.hsnCode || '94031010',
-              quantity: Math.min(2, p2.stock || 1),
-              rate: p2.sellingPrice,
-              discountPercent: 5,
-              taxRate: p2.taxRate || 18,
-              taxAmount: (Math.min(2, p2.stock || 1) * p2.sellingPrice * 0.95 * (p2.taxRate || 18)) / 100,
-              amount:
-                Math.min(2, p2.stock || 1) * p2.sellingPrice * 0.95 +
-                (Math.min(2, p2.stock || 1) * p2.sellingPrice * 0.95 * (p2.taxRate || 18)) / 100,
-            },
-          ]
-        : []),
     ];
   });
+
+  // Auto-synchronize items when products arrive asynchronously from Supabase
+  useEffect(() => {
+    if (products.length > 0) {
+      setItems((prevItems) => {
+        if (
+          prevItems.length === 0 ||
+          !prevItems[0].productId ||
+          !products.some((p) => p.id === prevItems[0].productId)
+        ) {
+          const p1 = products.find((p) => p.stock > 0) || products[0];
+          return [createItemFromProduct(p1, 1)];
+        }
+        return prevItems;
+      });
+    }
+  }, [products]);
+
+  // Auto-synchronize customer when customers arrive asynchronously
+  useEffect(() => {
+    if (customers.length > 0 && !customerId) {
+      setCustomerId(customers[0].id);
+    }
+  }, [customers, customerId]);
 
   // Settlement state — default to 'due' (not 'paid') so status is calculated properly
   const [paidAmount, setPaidAmount] = useState<number | null>(null);
@@ -101,14 +144,8 @@ export const BillingPage: React.FC = () => {
     ? `Only ${stockErrors[0].available} units are available for ${stockErrors[0].productName}. You are trying to sell ${stockErrors[0].requested} units.`
     : '';
 
-  // Calculations
-  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.rate, 0);
-  const discountTotal = items.reduce(
-    (sum, i) => sum + (i.quantity * i.rate * i.discountPercent) / 100,
-    0
-  );
-  const taxTotal = items.reduce((sum, i) => sum + i.taxAmount, 0);
-  const grandTotal = Math.round(subtotal - discountTotal + taxTotal);
+  // Calculations via central financial engine
+  const { subtotal, discountTotal, taxTotal, grandTotal } = calculateTotals(items);
 
   // Determine effective paid amount: if status is 'paid', full amount; otherwise use paidAmount
   const effectivePaid =
@@ -165,6 +202,19 @@ export const BillingPage: React.FC = () => {
       );
       return false;
     }
+
+    const invalidDimItem = items.find(
+      (item) => item.billingType === 'dimension' && ((item.length ?? 0) <= 0 || (item.width ?? 0) <= 0)
+    );
+    if (invalidDimItem) {
+      showToast(
+        'Invalid Dimensions',
+        `Length and width must both be greater than 0 for "${invalidDimItem.productName}".`,
+        'error'
+      );
+      return false;
+    }
+
     return true;
   };
 

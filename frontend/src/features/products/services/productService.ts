@@ -24,6 +24,10 @@ export interface DbProduct {
   gst_rate?: number | null;
   hsn_code?: string | null;
   description?: string | null;
+  billing_type?: string | null;
+  dimension_type?: string | null;
+  dimension_unit?: string | null;
+  billing_unit?: string | null;
   status: string;
   created_at?: string | null;
   updated_at?: string | null;
@@ -47,6 +51,10 @@ export function dbToProduct(r: DbProduct): Product {
     gstRate: r.gst_rate != null ? Number(r.gst_rate) : undefined,
     hsnCode: r.hsn_code ?? '',
     description: r.description ?? '',
+    billingType: (r.billing_type as Product['billingType']) || 'standard',
+    dimensionType: (r.dimension_type as Product['dimensionType']) || 'length_width',
+    dimensionUnit: (r.dimension_unit as Product['dimensionUnit']) || 'ft',
+    billingUnit: (r.billing_unit as Product['billingUnit']) || 'sq.ft',
     status: r.status as Product['status'],
     createdAt: r.created_at ?? undefined,
     updatedAt: r.updated_at ?? new Date().toISOString().split('T')[0],
@@ -83,6 +91,10 @@ export async function insertProduct(p: Product): Promise<void> {
     gst_rate:            p.gstRate ?? p.taxRate,
     hsn_code:            p.hsnCode || null,
     description:         p.description || null,
+    billing_type:        p.billingType || 'standard',
+    dimension_type:      p.dimensionType || 'length_width',
+    dimension_unit:      p.dimensionUnit || 'ft',
+    billing_unit:        p.billingUnit || 'sq.ft',
     status:              p.status,
   });
   if (error) {
@@ -107,6 +119,10 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
   if (updates.gstRate           !== undefined) patch.gst_rate            = updates.gstRate;
   if (updates.hsnCode           !== undefined) patch.hsn_code            = updates.hsnCode || null;
   if (updates.description       !== undefined) patch.description         = updates.description || null;
+  if (updates.billingType       !== undefined) patch.billing_type        = updates.billingType;
+  if (updates.dimensionType     !== undefined) patch.dimension_type      = updates.dimensionType;
+  if (updates.dimensionUnit     !== undefined) patch.dimension_unit      = updates.dimensionUnit;
+  if (updates.billingUnit       !== undefined) patch.billing_unit        = updates.billingUnit;
   if (updates.status            !== undefined) patch.status              = updates.status;
 
   const { error } = await supabase.from('products').update(patch).eq('id', id);
@@ -133,4 +149,3 @@ export async function archiveProduct(id: string): Promise<void> {
     throw error;
   }
 }
-

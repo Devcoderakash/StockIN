@@ -3,6 +3,7 @@
  */
 
 import type { PdfDocumentStatus } from '@/features/invoices/types';
+import type { BillingType, DimensionUnit, BillingAreaUnit } from '@/features/products/types';
 
 export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
 
@@ -18,6 +19,14 @@ export interface QuotationItem {
   taxRate: number;
   taxAmount: number;
   amount: number;
+  // Dimension-based billing snapshot fields
+  billingType?: BillingType;
+  length?: number;
+  width?: number;
+  height?: number;
+  dimensionUnit?: DimensionUnit;
+  billingUnit?: BillingAreaUnit | string;
+  billableQuantity?: number;
 }
 
 export interface Quotation {

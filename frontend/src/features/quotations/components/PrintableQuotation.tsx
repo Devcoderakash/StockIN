@@ -368,11 +368,38 @@ export const PrintableQuotation: React.FC<PrintableQuotationProps> = ({
                 {quotation.items.map((item, idx) => (
                   <tr key={item.id || idx} className="hover:bg-slate-50/50">
                     <td className="py-2.5 px-2 text-center font-mono text-slate-400">{idx + 1}</td>
-                    <td className="py-2.5 px-2 font-bold text-slate-900">{item.productName}</td>
+                    <td className="py-2.5 px-2">
+                      <p className="font-bold text-slate-900">{item.productName}</p>
+                      {item.billingType === 'dimension' && (
+                        <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-[10px] text-slate-500 font-mono">
+                          <span className="font-semibold text-amber-800 bg-amber-50 px-1 py-0.5 rounded border border-amber-200">
+                            Size: {item.length} {item.dimensionUnit || 'ft'} × {item.width} {item.dimensionUnit || 'ft'}
+                          </span>
+                          <span>•</span>
+                          <span className="font-semibold text-slate-700">
+                            Billable: {item.billableQuantity} {item.billingUnit || 'sq.ft'}
+                          </span>
+                        </div>
+                      )}
+                    </td>
                     <td className="py-2.5 px-2 font-mono text-slate-500">{item.sku}</td>
                     <td className="py-2.5 px-2 font-mono text-slate-500">{item.hsnCode || '—'}</td>
-                    <td className="py-2.5 px-2 text-center font-bold text-slate-900">{item.quantity}</td>
-                    <td className="py-2.5 px-2 text-right font-mono">{formatCurrency(item.rate)}</td>
+                    <td className="py-2.5 px-2 text-center font-bold text-slate-900">
+                      {item.quantity}
+                      {item.billingType === 'dimension' && (
+                        <span className="block text-[10px] font-normal text-slate-400">
+                          {item.quantity === 1 ? 'unit' : 'units'}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2.5 px-2 text-right font-mono">
+                      {formatCurrency(item.rate)}
+                      {item.billingType === 'dimension' && (
+                        <span className="block text-[10px] text-slate-400">
+                          / {item.billingUnit || 'sq.ft'}
+                        </span>
+                      )}
+                    </td>
                     <td className="py-2.5 px-2 text-center font-mono">
                       {item.discountPercent > 0 ? `${item.discountPercent}%` : '—'}
                     </td>

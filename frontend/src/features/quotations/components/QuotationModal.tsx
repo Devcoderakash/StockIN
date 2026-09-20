@@ -4,6 +4,7 @@ import { useAppState } from '@/context/AppStateContext';
 import { Quotation, QuotationItem, QuotationStatus } from '@/types';
 import { QuickCustomerModal } from '@/components/billing/QuickCustomerModal';
 import { formatCurrency } from '@/utils/formatters';
+import { calculateLineItem, calculateTotals } from '@/features/invoices/utils/invoiceCalculations';
 import {
   FileSpreadsheet,
   Plus,
@@ -96,9 +97,14 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
         const rate = p1.sellingPrice;
         const discount = 0;
         const taxRate = p1.taxRate || 18;
-        const base = qty * rate;
-        const discBase = base - (base * discount) / 100;
-        const taxAmt = (discBase * taxRate) / 100;
+        const isDim = p1.billingType === 'dimension';
+        const length = isDim ? 1 : undefined;
+        const width = isDim ? 1 : undefined;
+        const calc = calculateLineItem(qty, rate, discount, taxRate, {
+          billingType: p1.billingType,
+          length,
+          width,
+        });
 
         setItems([
           {
@@ -111,8 +117,14 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
             rate: rate,
             discountPercent: discount,
             taxRate: taxRate,
-            taxAmount: taxAmt,
-            amount: discBase + taxAmt,
+            taxAmount: calc.taxAmount,
+            amount: calc.totalAmount,
+            billingType: p1.billingType || 'standard',
+            dimensionUnit: p1.dimensionUnit || 'ft',
+            billingUnit: p1.billingUnit || 'sq.ft',
+            length,
+            width,
+            billableQuantity: calc.billableQuantity,
           },
         ]);
       } else {
@@ -130,7 +142,15 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
     const qty = 1;
     const rate = defaultProd ? defaultProd.sellingPrice : 1000;
     const taxRate = defaultProd ? defaultProd.taxRate || 18 : 18;
-    const taxAmt = (qty * rate * taxRate) / 100;
+    const isDim = defaultProd?.billingType === 'dimension';
+    const length = isDim ? 1 : undefined;
+    const width = isDim ? 1 : undefined;
+
+    const calc = calculateLineItem(qty, rate, 0, taxRate, {
+      billingType: defaultProd?.billingType,
+      length,
+      width,
+    });
 
     const newItem: QuotationItem = {
       id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 3)}`,
@@ -142,8 +162,14 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
       rate: rate,
       discountPercent: 0,
       taxRate: taxRate,
-      taxAmount: taxAmt,
-      amount: qty * rate + taxAmt,
+      taxAmount: calc.taxAmount,
+      amount: calc.totalAmount,
+      billingType: defaultProd?.billingType || 'standard',
+      dimensionUnit: defaultProd?.dimensionUnit || 'ft',
+      billingUnit: defaultProd?.billingUnit || 'sq.ft',
+      length,
+      width,
+      billableQuantity: calc.billableQuantity,
     };
     setItems([...items, newItem]);
   };
@@ -161,24 +187,44 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
         current.hsnCode = prod.hsnCode;
         current.rate = prod.sellingPrice;
         current.taxRate = prod.taxRate;
+        current.billingType = prod.billingType || 'standard';
+        current.dimensionUnit = prod.dimensionUnit || 'ft';
+        current.billingUnit = prod.billingUnit || 'sq.ft';
+        if (prod.billingType === 'dimension') {
+          current.length = current.length && current.length > 0 ? current.length : 1;
+          current.width = current.width && current.width > 0 ? current.width : 1;
+        } else {
+          current.length = undefined;
+          current.width = undefined;
+          current.billableQuantity = undefined;
+        }
       }
     }
 
+    const isDim = current.billingType === 'dimension';
     const qty = Math.max(1, current.quantity || 1);
     const rate = Math.max(0, current.rate || 0);
     const discount = Math.min(100, Math.max(0, current.discountPercent || 0));
     const taxRate = current.taxRate || 0;
+    const len = isDim ? (current.length !== undefined ? current.length : 1) : undefined;
+    const wid = isDim ? (current.width !== undefined ? current.width : 1) : undefined;
 
-    const baseTotal = qty * rate;
-    const discountedBase = baseTotal - (baseTotal * discount) / 100;
-    const taxAmount = (discountedBase * taxRate) / 100;
-    const lineTotal = discountedBase + taxAmount;
+    const calc = calculateLineItem(qty, rate, discount, taxRate, {
+      billingType: current.billingType,
+      length: len,
+      width: wid,
+    });
 
     current.quantity = qty;
     current.rate = rate;
     current.discountPercent = discount;
-    current.taxAmount = taxAmount;
-    current.amount = lineTotal;
+    current.taxAmount = calc.taxAmount;
+    current.amount = calc.totalAmount;
+    current.billableQuantity = calc.billableQuantity;
+    if (isDim) {
+      current.length = len;
+      current.width = wid;
+    }
 
     newItems[index] = current;
     setItems(newItems);
@@ -189,15 +235,13 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
   };
 
   // Calculations Engine
-  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.rate, 0);
-  const discountTotal = items.reduce(
-    (sum, i) => sum + (i.quantity * i.rate * i.discountPercent) / 100,
-    0
-  );
-  const taxTotal = items.reduce((sum, i) => sum + i.taxAmount, 0);
-  const cgst = taxTotal / 2;
-  const sgst = taxTotal / 2;
-  const grandTotal = Math.round(subtotal - discountTotal + taxTotal);
+  const totals = calculateTotals(items);
+  const subtotal = totals.subtotal;
+  const discountTotal = totals.discountTotal;
+  const taxTotal = totals.taxTotal;
+  const cgst = totals.cgst;
+  const sgst = totals.sgst;
+  const grandTotal = totals.grandTotal;
 
   // Check inventory warnings for all items
   const inventoryWarnings = items
@@ -226,6 +270,19 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
     }
     if (!validUntil) {
       showToast('Missing Expiry', 'Please specify a valid until date.', 'error');
+      return;
+    }
+
+    // Validate dimension items
+    const invalidDimItem = items.find(
+      (item) => item.billingType === 'dimension' && ((item.length ?? 0) <= 0 || (item.width ?? 0) <= 0)
+    );
+    if (invalidDimItem) {
+      showToast(
+        'Invalid Dimensions',
+        `Item "${invalidDimItem.productName}" requires length and width greater than 0.`,
+        'error'
+      );
       return;
     }
 
@@ -476,9 +533,16 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                     >
                       {/* Header: Item # and Delete */}
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                          Item #{idx + 1}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            Item #{idx + 1}
+                          </span>
+                          {item.billingType === 'dimension' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+                              Dimension Based
+                            </span>
+                          )}
+                        </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveItem(idx)}
@@ -499,7 +563,7 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                         >
                           {products.map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.name} ({p.sku}) — Avail: {p.stock} {p.unit}
+                              {p.name} ({p.sku}) — Avail: {p.stock} {p.unit} (₹{p.sellingPrice.toLocaleString('en-IN')}{p.billingType === 'dimension' ? `/${p.billingUnit || 'sq.ft'}` : ''})
                             </option>
                           ))}
                         </select>
@@ -522,12 +586,84 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                             <span className="text-[10px] text-slate-400">Custom Item</span>
                           )}
                         </div>
+
+                        {/* Dimensional Controls for Mode 2 Products */}
+                        {item.billingType === 'dimension' && (
+                          <div className="mt-2.5 p-2.5 bg-amber-50/60 border border-amber-200/80 rounded-xl space-y-2">
+                            <div className="flex items-center gap-3">
+                              <span className="text-[11px] font-bold text-amber-900 uppercase tracking-wider">
+                                Size:
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <label className="text-[11px] font-medium text-slate-600">L:</label>
+                                <div className="relative w-20">
+                                  <input
+                                    type="number"
+                                    min="0.01"
+                                    step="any"
+                                    value={item.length ?? ''}
+                                    onChange={(e) =>
+                                      handleUpdateItem(idx, { length: parseFloat(e.target.value) || 0 })
+                                    }
+                                    className={`w-full pr-5 pl-2 py-1 text-xs font-semibold rounded-md border bg-white focus:outline-hidden focus:ring-1 ${
+                                      !item.length || item.length <= 0
+                                        ? 'border-rose-400 ring-1 ring-rose-300'
+                                        : 'border-slate-300 focus:ring-amber-500'
+                                    }`}
+                                    placeholder="Length"
+                                  />
+                                  <span className="absolute right-1.5 top-1 text-[10px] font-medium text-slate-400 pointer-events-none">
+                                    {item.dimensionUnit || 'ft'}
+                                  </span>
+                                </div>
+
+                                <span className="text-slate-400 font-bold">×</span>
+
+                                <label className="text-[11px] font-medium text-slate-600">W:</label>
+                                <div className="relative w-20">
+                                  <input
+                                    type="number"
+                                    min="0.01"
+                                    step="any"
+                                    value={item.width ?? ''}
+                                    onChange={(e) =>
+                                      handleUpdateItem(idx, { width: parseFloat(e.target.value) || 0 })
+                                    }
+                                    className={`w-full pr-5 pl-2 py-1 text-xs font-semibold rounded-md border bg-white focus:outline-hidden focus:ring-1 ${
+                                      !item.width || item.width <= 0
+                                        ? 'border-rose-400 ring-1 ring-rose-300'
+                                        : 'border-slate-300 focus:ring-amber-500'
+                                    }`}
+                                    placeholder="Width"
+                                  />
+                                  <span className="absolute right-1.5 top-1 text-[10px] font-medium text-slate-400 pointer-events-none">
+                                    {item.dimensionUnit || 'ft'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Live Calculation Formula Display */}
+                            <div className="text-[11px] text-amber-900 flex flex-wrap items-center gap-1.5">
+                              <span className="font-mono bg-amber-100/90 text-amber-950 px-2 py-0.5 rounded text-[11px] font-semibold">
+                                {item.length || 0} {item.dimensionUnit} × {item.width || 0}{' '}
+                                {item.dimensionUnit} × {item.quantity} ={' '}
+                                {item.billableQuantity || 0} {item.billingUnit}
+                              </span>
+                              <span>•</span>
+                              <span className="font-mono font-semibold text-slate-700">
+                                {item.billableQuantity || 0} {item.billingUnit} × ₹{item.rate} = ₹
+                                {((item.billableQuantity || 0) * (item.rate || 0)).toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Stepper Quantity & Quoted Rate */}
                       <div className="grid grid-cols-2 gap-3 pt-1">
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Quantity</label>
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Quantity (Units)</label>
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
@@ -556,7 +692,9 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Quoted Rate (₹)</label>
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                            Quoted Rate (₹){item.billingType === 'dimension' ? ` / ${item.billingUnit || 'sq.ft'}` : ''}
+                          </label>
                           <input
                             type="number"
                             min="0"
@@ -629,8 +767,8 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                   <tr className="text-slate-400 border-b border-slate-200 font-semibold">
                     <th className="pb-3 w-8">#</th>
                     <th className="pb-3 min-w-[280px]">Product / Live Stock</th>
-                    <th className="pb-3 w-20 text-center">Qty</th>
-                    <th className="pb-3 w-28 text-right">Quoted Rate (₹)</th>
+                    <th className="pb-3 w-24 text-center">Qty (Units)</th>
+                    <th className="pb-3 w-32 text-right">Quoted Rate (₹)</th>
                     <th className="pb-3 w-16 text-center">Disc %</th>
                     <th className="pb-3 w-16 text-center">GST %</th>
                     <th className="pb-3 w-24 text-right">GST (₹)</th>
@@ -657,10 +795,10 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                             isLowStock ? 'bg-amber-50/40' : 'hover:bg-slate-50/70'
                           }`}
                         >
-                          <td className="py-3 text-slate-400 font-medium">{idx + 1}</td>
+                          <td className="py-3 text-slate-400 font-medium align-top pt-3">{idx + 1}</td>
 
                           {/* Product Selection + Stock Badge */}
-                          <td className="py-3 pr-2">
+                          <td className="py-3 pr-2 align-top">
                             <select
                               value={item.productId}
                               onChange={(e) => handleUpdateItem(idx, { productId: e.target.value })}
@@ -668,7 +806,7 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                             >
                               {products.map((p) => (
                                 <option key={p.id} value={p.id}>
-                                  {p.name} ({p.sku}) — Avail: {p.stock} {p.unit} (₹{p.sellingPrice.toLocaleString('en-IN')})
+                                  {p.name} ({p.sku}) — Avail: {p.stock} {p.unit} (₹{p.sellingPrice.toLocaleString('en-IN')}{p.billingType === 'dimension' ? `/${p.billingUnit || 'sq.ft'}` : ''})
                                 </option>
                               ))}
                             </select>
@@ -690,11 +828,88 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                               ) : (
                                 <span className="text-[10px] text-slate-400">Custom Product</span>
                               )}
+                              {item.billingType === 'dimension' && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+                                  Dimension Billing
+                                </span>
+                              )}
                             </div>
+
+                            {/* Dimensional Controls for Mode 2 Products */}
+                            {item.billingType === 'dimension' && (
+                              <div className="mt-2 p-2.5 bg-amber-50/60 border border-amber-200/80 rounded-lg space-y-2">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[11px] font-bold text-amber-900 uppercase tracking-wider">
+                                    Size:
+                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <label className="text-[11px] font-medium text-slate-600">L:</label>
+                                    <div className="relative w-20">
+                                      <input
+                                        type="number"
+                                        min="0.01"
+                                        step="any"
+                                        value={item.length ?? ''}
+                                        onChange={(e) =>
+                                          handleUpdateItem(idx, { length: parseFloat(e.target.value) || 0 })
+                                        }
+                                        className={`w-full pr-5 pl-2 py-1 text-xs font-semibold rounded-md border bg-white focus:outline-hidden focus:ring-1 ${
+                                          !item.length || item.length <= 0
+                                            ? 'border-rose-400 ring-1 ring-rose-300'
+                                            : 'border-slate-300 focus:ring-amber-500'
+                                        }`}
+                                        placeholder="Length"
+                                      />
+                                      <span className="absolute right-1.5 top-1 text-[10px] font-medium text-slate-400 pointer-events-none">
+                                        {item.dimensionUnit || 'ft'}
+                                      </span>
+                                    </div>
+
+                                    <span className="text-slate-400 font-bold">×</span>
+
+                                    <label className="text-[11px] font-medium text-slate-600">W:</label>
+                                    <div className="relative w-20">
+                                      <input
+                                        type="number"
+                                        min="0.01"
+                                        step="any"
+                                        value={item.width ?? ''}
+                                        onChange={(e) =>
+                                          handleUpdateItem(idx, { width: parseFloat(e.target.value) || 0 })
+                                        }
+                                        className={`w-full pr-5 pl-2 py-1 text-xs font-semibold rounded-md border bg-white focus:outline-hidden focus:ring-1 ${
+                                          !item.width || item.width <= 0
+                                            ? 'border-rose-400 ring-1 ring-rose-300'
+                                            : 'border-slate-300 focus:ring-amber-500'
+                                        }`}
+                                        placeholder="Width"
+                                      />
+                                      <span className="absolute right-1.5 top-1 text-[10px] font-medium text-slate-400 pointer-events-none">
+                                        {item.dimensionUnit || 'ft'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Live Calculation Formula Display */}
+                                <div className="text-[11px] text-amber-900 flex flex-wrap items-center gap-1.5">
+                                  <span className="font-mono bg-amber-100/90 text-amber-950 px-2 py-0.5 rounded text-[11px] font-semibold">
+                                    {item.length || 0} {item.dimensionUnit} × {item.width || 0}{' '}
+                                    {item.dimensionUnit} × {item.quantity} ={' '}
+                                    {item.billableQuantity || 0} {item.billingUnit}
+                                  </span>
+                                  <span>•</span>
+                                  <span className="font-mono font-semibold text-slate-700">
+                                    {item.billableQuantity || 0} {item.billingUnit} × ₹{item.rate} = ₹
+                                    {((item.billableQuantity || 0) * (item.rate || 0)).toLocaleString('en-IN')}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </td>
 
                           {/* Quantity */}
-                          <td className="py-3 px-1">
+                          <td className="py-3 px-1 align-top pt-3">
                             <input
                               type="number"
                               min="1"
@@ -707,7 +922,7 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                           </td>
 
                           {/* Rate Snapshot */}
-                          <td className="py-3 px-1 text-right">
+                          <td className="py-3 px-1 text-right align-top pt-3">
                             <input
                               type="number"
                               min="0"
@@ -718,6 +933,11 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
                               }
                               className="w-full px-2 py-1.5 text-right font-mono font-medium border border-slate-300 rounded-lg text-slate-900 focus:ring-1 focus:ring-amber-500"
                             />
+                            {item.billingType === 'dimension' && (
+                              <span className="text-[10px] text-slate-400 block mt-0.5">
+                                per {item.billingUnit || 'sq.ft'}
+                              </span>
+                            )}
                           </td>
 
                           {/* Discount % */}

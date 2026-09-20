@@ -21,6 +21,13 @@ export interface DbQuotationItem {
   tax_rate: number;
   tax_amount: number;
   amount: number;
+  billing_type?: string | null;
+  length?: number | null;
+  width?: number | null;
+  height?: number | null;
+  dimension_unit?: string | null;
+  billing_unit?: string | null;
+  billable_quantity?: number | null;
   created_at?: string | null;
 }
 
@@ -71,6 +78,13 @@ export function dbToQuotationItem(r: DbQuotationItem): QuotationItem {
     taxRate: Number(r.tax_rate),
     taxAmount: Number(r.tax_amount),
     amount: Number(r.amount),
+    billingType: (r.billing_type as QuotationItem['billingType']) || 'standard',
+    length: r.length != null ? Number(r.length) : undefined,
+    width: r.width != null ? Number(r.width) : undefined,
+    height: r.height != null ? Number(r.height) : undefined,
+    dimensionUnit: (r.dimension_unit as QuotationItem['dimensionUnit']) || undefined,
+    billingUnit: r.billing_unit || undefined,
+    billableQuantity: r.billable_quantity != null ? Number(r.billable_quantity) : undefined,
   };
 }
 
@@ -166,6 +180,13 @@ export async function insertQuotation(q: Quotation): Promise<void> {
       tax_rate:         item.taxRate,
       tax_amount:       item.taxAmount,
       amount:           item.amount,
+      billing_type:      item.billingType || 'standard',
+      length:            item.length ?? null,
+      width:             item.width ?? null,
+      height:            item.height ?? null,
+      dimension_unit:    item.dimensionUnit ?? null,
+      billing_unit:      item.billingUnit ?? null,
+      billable_quantity: item.billableQuantity ?? null,
     }));
     const { error: iErr } = await supabase.from('quotation_items').insert(rows);
     if (iErr) {
@@ -222,6 +243,13 @@ export async function updateQuotation(id: string, updates: Partial<Quotation>): 
         tax_rate:         item.taxRate,
         tax_amount:       item.taxAmount,
         amount:           item.amount,
+        billing_type:      item.billingType || 'standard',
+        length:            item.length ?? null,
+        width:             item.width ?? null,
+        height:            item.height ?? null,
+        dimension_unit:    item.dimensionUnit ?? null,
+        billing_unit:      item.billingUnit ?? null,
+        billable_quantity: item.billableQuantity ?? null,
       }));
       const { error: iErr } = await supabase.from('quotation_items').insert(rows);
       if (iErr) {

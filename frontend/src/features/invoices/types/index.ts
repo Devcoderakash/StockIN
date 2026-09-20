@@ -2,6 +2,8 @@
  * src/features/invoices/types/index.ts
  */
 
+import type { BillingType, DimensionUnit, BillingAreaUnit } from '@/features/products/types';
+
 export type PaymentStatus = 'paid' | 'partial' | 'due';
 export type PdfDocumentStatus = 'pending' | 'uploaded' | 'failed';
 
@@ -17,6 +19,14 @@ export interface InvoiceItem {
   taxRate: number;
   taxAmount: number;
   amount: number;
+  // Dimension-based billing snapshot fields
+  billingType?: BillingType;
+  length?: number;
+  width?: number;
+  height?: number;
+  dimensionUnit?: DimensionUnit;
+  billingUnit?: BillingAreaUnit | string;
+  billableQuantity?: number;
 }
 
 export interface Invoice {

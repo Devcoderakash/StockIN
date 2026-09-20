@@ -368,12 +368,38 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
                     <td className="p-3 text-slate-400 font-mono text-center">{idx + 1}</td>
                     <td className="p-3">
                       <p className="font-bold text-slate-900">{item.productName}</p>
-                      <p className="text-[11px] text-slate-500 font-mono mt-0.5">SKU: {item.sku}</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-0.5 text-[11px] text-slate-500 font-mono">
+                        <span>SKU: {item.sku}</span>
+                        {item.billingType === 'dimension' && (
+                          <>
+                            <span>•</span>
+                            <span className="font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                              Size: {item.length} {item.dimensionUnit || 'ft'} × {item.width} {item.dimensionUnit || 'ft'}
+                            </span>
+                            <span>•</span>
+                            <span className="font-semibold text-slate-700">
+                              Billable: {item.billableQuantity} {item.billingUnit || 'sq.ft'}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </td>
                     <td className="p-3 text-center font-mono text-slate-600">{item.hsnCode || '—'}</td>
-                    <td className="p-3 text-center font-black text-slate-900">{item.quantity}</td>
+                    <td className="p-3 text-center font-black text-slate-900">
+                      {item.quantity}
+                      {item.billingType === 'dimension' && (
+                        <span className="block text-[10px] font-normal text-slate-400">
+                          {item.quantity === 1 ? 'unit' : 'units'}
+                        </span>
+                      )}
+                    </td>
                     <td className="p-3 text-right font-medium text-slate-800">
                       {formatCurrency(item.rate)}
+                      {item.billingType === 'dimension' && (
+                        <span className="block text-[10px] text-slate-400">
+                          / {item.billingUnit || 'sq.ft'}
+                        </span>
+                      )}
                     </td>
                     <td className="p-3 text-center text-slate-600">
                       {item.discountPercent > 0 ? `${item.discountPercent}%` : '—'}

@@ -159,13 +159,15 @@ export function generateDocumentPdf(options: GeneratePdfOptions): { blob: Blob; 
   const items = doc.items || [];
 
   items.slice(0, 18).forEach((item, index) => {
-    currentY -= 18;
+    const isDim = item.billingType === 'dimension';
+    const rowHeight = isDim ? 26 : 18;
+    currentY -= rowHeight;
     const isEven = index % 2 === 1;
 
     if (isEven) {
       stream.push('q');
       stream.push('0.97 0.98 0.99 rg');
-      stream.push(`40 ${currentY} 515 18 re f`);
+      stream.push(`40 ${currentY} 515 ${rowHeight} re f`);
       stream.push('Q');
     }
 
@@ -176,20 +178,32 @@ export function generateDocumentPdf(options: GeneratePdfOptions): { blob: Blob; 
     stream.push(`40 ${currentY} m 555 ${currentY} l S`);
     stream.push('Q');
 
-    const rateStr = `Rs. ${item.rate.toFixed(2)}`;
+    const rateStr = isDim
+      ? `Rs. ${item.rate.toFixed(2)}/${item.billingUnit || 'sq.ft'}`
+      : `Rs. ${item.rate.toFixed(2)}`;
     const amtStr = `Rs. ${item.amount.toFixed(2)}`;
+    const textY = isDim ? currentY + 14 : currentY + 5;
 
     stream.push('BT');
     stream.push('/F2 8.5 Tf');
     stream.push('0.15 0.2 0.25 rg');
-    stream.push(`48 ${currentY + 5} Td (${index + 1}) Tj`);
+    stream.push(`48 ${textY} Td (${index + 1}) Tj`);
     stream.push(`24 0 Td (${escapePdfText(item.productName.slice(0, 32))}) Tj`);
     stream.push(`210 0 Td (${escapePdfText(item.hsnCode || '—')}) Tj`);
-    stream.push(`60 0 Td (${item.quantity}) Tj`);
-    stream.push(`50 0 Td (${escapePdfText(rateStr)}) Tj`);
+    stream.push(`60 0 Td (${item.quantity}${isDim ? ' pcs' : ''}) Tj`);
+    stream.push(`50 0 Td (${escapePdfText(rateStr.slice(0, 16))}) Tj`);
     stream.push(`50 0 Td (${item.taxRate}%) Tj`);
     stream.push(`40 0 Td (${escapePdfText(amtStr)}) Tj`);
     stream.push('ET');
+
+    if (isDim) {
+      const dimDesc = `Size: ${item.length || 0} ${item.dimensionUnit || 'ft'} x ${item.width || 0} ${item.dimensionUnit || 'ft'} | Billable Area: ${item.billableQuantity || 0} ${item.billingUnit || 'sq.ft'}`;
+      stream.push('BT');
+      stream.push('/F2 7 Tf');
+      stream.push('0.3 0.45 0.65 rg');
+      stream.push(`72 ${currentY + 4} Td (${escapePdfText(dimDesc)}) Tj`);
+      stream.push('ET');
+    }
   });
 
   // 8. Financial Summary Block

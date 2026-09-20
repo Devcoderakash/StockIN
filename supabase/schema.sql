@@ -89,6 +89,12 @@ CREATE TABLE IF NOT EXISTS public.products (
   gst_rate            NUMERIC(5, 2),
   hsn_code            TEXT,
   description         TEXT,
+  billing_type        TEXT DEFAULT 'standard' NOT NULL
+                        CHECK (billing_type IN ('standard','dimension')),
+  dimension_type      TEXT DEFAULT 'length_width'
+                        CHECK (dimension_type IN ('length_width','length_width_height')),
+  dimension_unit      TEXT DEFAULT 'ft',
+  billing_unit        TEXT DEFAULT 'sq.ft',
   status              TEXT DEFAULT 'in_stock' NOT NULL
                         CHECK (status IN ('in_stock','low_stock','out_of_stock','archived')),
   created_at          TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -180,7 +186,15 @@ CREATE TABLE IF NOT EXISTS public.invoice_items (
   discount_percent NUMERIC(5, 2) DEFAULT 0 NOT NULL,
   tax_rate         NUMERIC(5, 2) DEFAULT 0 NOT NULL,
   tax_amount       NUMERIC(12, 2) DEFAULT 0 NOT NULL,
-  amount           NUMERIC(12, 2) NOT NULL
+  amount           NUMERIC(12, 2) NOT NULL,
+  billing_type     TEXT DEFAULT 'standard' NOT NULL
+                     CHECK (billing_type IN ('standard','dimension')),
+  length           NUMERIC(12, 3),
+  width            NUMERIC(12, 3),
+  height           NUMERIC(12, 3),
+  dimension_unit   TEXT,
+  billing_unit     TEXT,
+  billable_quantity NUMERIC(12, 3)
 );
 
 
@@ -247,7 +261,15 @@ CREATE TABLE IF NOT EXISTS public.quotation_items (
   discount_percent NUMERIC(5, 2) DEFAULT 0 NOT NULL,
   tax_rate         NUMERIC(5, 2) DEFAULT 0 NOT NULL,
   tax_amount       NUMERIC(12, 2) DEFAULT 0 NOT NULL,
-  amount           NUMERIC(12, 2) NOT NULL
+  amount           NUMERIC(12, 2) NOT NULL,
+  billing_type     TEXT DEFAULT 'standard' NOT NULL
+                     CHECK (billing_type IN ('standard','dimension')),
+  length           NUMERIC(12, 3),
+  width            NUMERIC(12, 3),
+  height           NUMERIC(12, 3),
+  dimension_unit   TEXT,
+  billing_unit     TEXT,
+  billable_quantity NUMERIC(12, 3)
 );
 
 
@@ -501,17 +523,25 @@ BEGIN
     WHERE quotation_id = p_quotation_id AND user_id = v_user_id
     ORDER BY id
   LOOP
-    -- 5a. Invoice item
+    -- 5a. Invoice item with dimension preservation
     INSERT INTO public.invoice_items (
       id, invoice_id, user_id,
       product_id, product_name, sku, hsn_code,
-      quantity, rate, discount_percent, tax_rate, tax_amount, amount
+      quantity, rate, discount_percent, tax_rate, tax_amount, amount,
+      billing_type, length, width, height, dimension_unit, billing_unit, billable_quantity
     ) VALUES (
       'ii-' || substr(md5(p_invoice_id || v_item.id || random()::text), 1, 12),
       p_invoice_id, v_user_id,
       v_item.product_id, v_item.product_name, v_item.sku, v_item.hsn_code,
       v_item.quantity, v_item.rate, v_item.discount_percent,
-      v_item.tax_rate, v_item.tax_amount, v_item.amount
+      v_item.tax_rate, v_item.tax_amount, v_item.amount,
+      COALESCE(v_item.billing_type, 'standard'),
+      v_item.length,
+      v_item.width,
+      v_item.height,
+      v_item.dimension_unit,
+      v_item.billing_unit,
+      COALESCE(v_item.billable_quantity, v_item.quantity)
     );
 
     -- 5b. Get current stock (fresh read inside transaction)
@@ -628,6 +658,13 @@ DECLARE
   v_notes            TEXT;
   v_prev_stock       INTEGER;
   v_new_stock        INTEGER;
+  v_billable_qty     NUMERIC;
+  v_item_billing     TEXT;
+  v_line_base        NUMERIC;
+  v_disc_amt         NUMERIC;
+  v_taxable          NUMERIC;
+  v_tax_amt          NUMERIC;
+  v_line_amt         NUMERIC;
 BEGIN
   -- ── 0. Authenticate & Enforce Tenant Isolation ─────────────────────────────
   IF v_user_id IS NULL THEN
@@ -777,6 +814,26 @@ BEGIN
     );
   END IF;
 
+  -- ── 4b. Dimensional Item Validation ────────────────────────────────────────
+  FOR v_item_rec IN
+    SELECT * FROM jsonb_to_recordset(v_items) AS (
+      billing_type TEXT,
+      length NUMERIC,
+      width NUMERIC,
+      product_name TEXT
+    )
+  LOOP
+    IF v_item_rec.billing_type = 'dimension' THEN
+      IF COALESCE(v_item_rec.length, 0) <= 0 OR COALESCE(v_item_rec.width, 0) <= 0 THEN
+        RETURN jsonb_build_object(
+          'success', false,
+          'error_code', 'INVALID_DIMENSIONS',
+          'error', 'Length and width must be greater than 0 for dimension-based product: ' || COALESCE(v_item_rec.product_name, 'Item')
+        );
+      END IF;
+    END IF;
+  END LOOP;
+
   -- ── 5. Prepare Financials & Create Invoice ──────────────────────────────────
   v_invoice_id     := COALESCE(p_invoice->>'id', 'inv-' || substr(md5(random()::text), 1, 10));
   v_date           := COALESCE(p_invoice->>'date', to_char(NOW(), 'YYYY-MM-DD'));
@@ -818,7 +875,7 @@ BEGIN
     v_paid_amount, v_balance, v_status, v_notes
   );
 
-  -- ── 6. Insert Line Items ───────────────────────────────────────────────────
+  -- ── 6. Insert Line Items with Dimensional Snapshot ────────────────────────
   FOR v_item_rec IN
     SELECT * FROM jsonb_to_recordset(v_items) AS (
       id TEXT,
@@ -831,13 +888,39 @@ BEGIN
       discount_percent NUMERIC,
       tax_rate NUMERIC,
       tax_amount NUMERIC,
-      amount NUMERIC
+      amount NUMERIC,
+      billing_type TEXT,
+      length NUMERIC,
+      width NUMERIC,
+      height NUMERIC,
+      dimension_unit TEXT,
+      billing_unit TEXT,
+      billable_quantity NUMERIC
     )
   LOOP
+    v_item_billing := COALESCE(v_item_rec.billing_type, 'standard');
+
+    IF v_item_billing = 'dimension' THEN
+      v_billable_qty := COALESCE(
+        v_item_rec.billable_quantity,
+        round((COALESCE(v_item_rec.length, 1) * COALESCE(v_item_rec.width, 1) * COALESCE(v_item_rec.height, 1) * v_item_rec.quantity)::numeric, 3)
+      );
+      v_line_base := round((v_billable_qty * v_item_rec.rate)::numeric, 2);
+    ELSE
+      v_billable_qty := v_item_rec.quantity;
+      v_line_base := round((v_item_rec.quantity * v_item_rec.rate)::numeric, 2);
+    END IF;
+
+    v_disc_amt := round((v_line_base * COALESCE(v_item_rec.discount_percent, 0) / 100)::numeric, 2);
+    v_taxable  := GREATEST(0, v_line_base - v_disc_amt);
+    v_tax_amt  := round((v_taxable * COALESCE(v_item_rec.tax_rate, 0) / 100)::numeric, 2);
+    v_line_amt := v_taxable + v_tax_amt;
+
     INSERT INTO public.invoice_items (
       id, invoice_id, user_id,
       product_id, product_name, sku, hsn_code,
-      quantity, rate, discount_percent, tax_rate, tax_amount, amount
+      quantity, rate, discount_percent, tax_rate, tax_amount, amount,
+      billing_type, length, width, height, dimension_unit, billing_unit, billable_quantity
     ) VALUES (
       COALESCE(v_item_rec.id, 'ii-' || substr(md5(v_invoice_id || v_item_rec.product_id || random()::text), 1, 12)),
       v_invoice_id, v_user_id,
@@ -845,8 +928,15 @@ BEGIN
       v_item_rec.quantity, v_item_rec.rate,
       COALESCE(v_item_rec.discount_percent, 0),
       COALESCE(v_item_rec.tax_rate, 0),
-      COALESCE(v_item_rec.tax_amount, 0),
-      v_item_rec.amount
+      COALESCE(v_item_rec.tax_amount, v_tax_amt),
+      COALESCE(v_item_rec.amount, v_line_amt),
+      v_item_billing,
+      v_item_rec.length,
+      v_item_rec.width,
+      v_item_rec.height,
+      v_item_rec.dimension_unit,
+      v_item_rec.billing_unit,
+      v_billable_qty
     );
   END LOOP;
 

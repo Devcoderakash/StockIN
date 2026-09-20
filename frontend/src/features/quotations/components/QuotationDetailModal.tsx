@@ -373,8 +373,20 @@ export const QuotationDetailModal: React.FC<QuotationDetailModalProps> = ({
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-bold text-slate-900 text-xs">{item.productName}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-slate-900 text-xs">{item.productName}</p>
+                        {item.billingType === 'dimension' && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded">
+                            Dimension
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[11px] font-mono text-slate-400">{item.sku}</p>
+                      {item.billingType === 'dimension' && (
+                        <p className="text-[10px] text-slate-600 font-mono mt-0.5">
+                          Size: {item.length} {item.dimensionUnit || 'ft'} × {item.width} {item.dimensionUnit || 'ft'} • Area: {item.billableQuantity} {item.billingUnit || 'sq.ft'}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       <span className="font-bold text-sm font-mono text-slate-900 block">
@@ -402,6 +414,7 @@ export const QuotationDetailModal: React.FC<QuotationDetailModalProps> = ({
                     </div>
                     <div className="text-right">
                       Rate: <strong className="text-slate-700 font-mono">{formatCurrency(item.rate)}</strong>
+                      {item.billingType === 'dimension' && <span className="text-[10px] text-slate-400 ml-0.5">/{item.billingUnit || 'sq.ft'}</span>}
                       {item.discountPercent > 0 && <span className="text-emerald-600 ml-1">(-{item.discountPercent}%)</span>}
                     </div>
                   </div>
@@ -433,8 +446,20 @@ export const QuotationDetailModal: React.FC<QuotationDetailModalProps> = ({
                     >
                       <td className="py-2.5 px-3 text-center text-slate-400 font-mono">{idx + 1}</td>
                       <td className="py-2.5 px-3">
-                        <p className="font-bold text-slate-900">{item.productName}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-slate-900">{item.productName}</p>
+                          {item.billingType === 'dimension' && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded">
+                              Dimension
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[11px] font-mono text-slate-400">{item.sku}</p>
+                        {item.billingType === 'dimension' && (
+                          <p className="text-[10px] text-slate-600 font-mono mt-0.5">
+                            Size: {item.length} {item.dimensionUnit || 'ft'} × {item.width} {item.dimensionUnit || 'ft'} • Area: {item.billableQuantity} {item.billingUnit || 'sq.ft'}
+                          </p>
+                        )}
                       </td>
                       <td className="py-2.5 px-3">
                         {quotation.status === 'converted' ? (
@@ -452,7 +477,12 @@ export const QuotationDetailModal: React.FC<QuotationDetailModalProps> = ({
                         )}
                       </td>
                       <td className="py-2.5 px-3 text-center font-bold text-slate-900">{item.quantity}</td>
-                      <td className="py-2.5 px-3 text-right font-mono">{formatCurrency(item.rate)}</td>
+                      <td className="py-2.5 px-3 text-right font-mono">
+                        {formatCurrency(item.rate)}
+                        {item.billingType === 'dimension' && (
+                          <span className="block text-[10px] text-slate-400">/{item.billingUnit || 'sq.ft'}</span>
+                        )}
+                      </td>
                       <td className="py-2.5 px-3 text-center font-mono">
                         {item.discountPercent > 0 ? `${item.discountPercent}%` : '—'}
                       </td>

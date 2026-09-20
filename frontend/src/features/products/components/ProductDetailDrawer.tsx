@@ -187,6 +187,22 @@ export const ProductDetailDrawer: React.FC<ProductDetailDrawerProps> = ({
               <span className="font-semibold text-slate-900">{product.brand}</span>
             </div>
             <div className="flex justify-between p-3">
+              <span className="text-slate-500">Billing Method</span>
+              <span className="font-semibold text-blue-700">
+                {product.billingType === 'dimension'
+                  ? `Dimension Based (${product.dimensionUnit} → ${product.billingUnit})`
+                  : `Standard Quantity (${product.unit})`}
+              </span>
+            </div>
+            {product.billingType === 'dimension' && (
+              <div className="flex justify-between p-3 bg-blue-50/40">
+                <span className="text-slate-600">Dimension Structure</span>
+                <span className="font-mono font-bold text-slate-800">
+                  {product.dimensionType === 'length_width_height' ? 'Length × Width × Height' : 'Length × Width'}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between p-3">
               <span className="text-slate-500">HSN / SAC Code</span>
               <span className="font-mono text-slate-800">{product.hsnCode}</span>
             </div>
