@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { useAppState } from '@/context/AppStateContext';
 import { Quotation, QuotationItem, QuotationStatus } from '@/types';
@@ -12,7 +12,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   UserPlus,
-  Calendar,
   Sparkles,
 } from 'lucide-react';
 
@@ -35,7 +34,6 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({
     addQuotation,
     updateQuotation,
     generateQuotationNumber,
-    settings,
     showToast,
   } = useAppState();
 

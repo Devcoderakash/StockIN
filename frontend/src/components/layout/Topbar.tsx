@@ -26,7 +26,7 @@ interface TopbarProps {
 export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileSidebar, onOpenSearch }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { notifications, resetToDefaults, showToast } = useAppState();
+  const { notifications, resetToDefaults, showToast, settings } = useAppState();
   const { userDisplayName, userEmail, signOut } = useAuth();
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -100,8 +100,8 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileSidebar, onOpenSea
             <h2 className="text-sm sm:text-lg font-bold text-slate-900 leading-tight truncate">
               {getPageTitle(location.pathname)}
             </h2>
-            <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-              Bhopal Branch • FY 2026-27
+            <p className="text-[11px] text-slate-400 font-medium hidden sm:block truncate">
+              {settings.city ? `${settings.city} Branch • ` : ''}FY 2026-27
             </p>
           </div>
         </div>

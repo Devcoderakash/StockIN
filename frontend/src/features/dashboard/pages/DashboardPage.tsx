@@ -111,7 +111,11 @@ export const DashboardPage: React.FC = () => {
         <StatCard
           title={timeframe === 'Today' ? "Today's Sales" : `Sales (${timeframe})`}
           value={formatCurrency(periodSales)}
-          change={{ value: `${periodInvoiceCount} invoice${periodInvoiceCount !== 1 ? 's' : ''} billed`, isPositive: true }}
+          change={{
+            value: `${periodInvoiceCount} bill${periodInvoiceCount !== 1 ? 's' : ''}`,
+            isPositive: true,
+            label: timeframe === 'Today' ? 'today' : `in ${timeframe.toLowerCase()}`,
+          }}
           icon={<TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />}
           iconBgColor="bg-emerald-50"
           badgeText="Revenue"
@@ -121,7 +125,7 @@ export const DashboardPage: React.FC = () => {
         <StatCard
           title="Total Stock Value"
           value={formatCurrency(totalStockValue)}
-          change={{ value: 'At purchase cost', isPositive: true }}
+          subtitle="At purchase cost valuation"
           icon={<Boxes className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />}
           iconBgColor="bg-blue-50"
           badgeText="Inventory"
@@ -131,7 +135,7 @@ export const DashboardPage: React.FC = () => {
         <StatCard
           title="Total Products"
           value={formatIndianNumber(totalProductsCount)}
-          change={{ value: `${totalProductsCount} active SKUs`, isPositive: true }}
+          subtitle={`${totalProductsCount} active catalog SKUs`}
           icon={<Package className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />}
           iconBgColor="bg-indigo-50"
           badgeText="Catalog"
@@ -141,17 +145,17 @@ export const DashboardPage: React.FC = () => {
         <StatCard
           title="Low Stock Items"
           value={formatIndianNumber(lowStockCount)}
-          change={{ value: lowStockCount > 0 ? 'Needs reorder' : 'Stock healthy', isPositive: lowStockCount === 0 }}
+          subtitle={lowStockCount > 0 ? 'Requires stock replenishment' : 'All items above buffer'}
           icon={<AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />}
           iconBgColor="bg-amber-50"
-          badgeText={lowStockCount > 0 ? 'Action' : 'OK'}
+          badgeText={lowStockCount > 0 ? 'Action' : 'Normal'}
         />
 
         {/* 5. Outstanding (Receivables) */}
         <StatCard
           title="Outstanding Receivables"
           value={formatCurrency(totalOutstanding)}
-          change={{ value: totalOutstanding > 0 ? 'Pending' : 'All clear', isPositive: totalOutstanding === 0 }}
+          subtitle={totalOutstanding > 0 ? 'Pending customer credit' : 'All customer accounts settled'}
           icon={<Clock className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" />}
           iconBgColor="bg-rose-50"
           badgeText={totalOutstanding > 0 ? 'Due' : 'Clear'}
@@ -161,10 +165,10 @@ export const DashboardPage: React.FC = () => {
         <StatCard
           title="Out of Stock"
           value={formatIndianNumber(outOfStockCount)}
-          change={{ value: outOfStockCount > 0 ? 'Unavailable' : 'Available', isPositive: outOfStockCount === 0 }}
+          subtitle={outOfStockCount > 0 ? 'Zero units on hand' : 'Full warehouse availability'}
           icon={<Boxes className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" />}
           iconBgColor="bg-rose-50"
-          badgeText={outOfStockCount > 0 ? 'Restock' : 'Good'}
+          badgeText={outOfStockCount > 0 ? 'Restock' : 'Optimal'}
         />
       </div>
 

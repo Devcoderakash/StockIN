@@ -6,28 +6,33 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const envUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-const envKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)?.trim();
+// Canonical public Supabase configuration for StockIN
+const CANONICAL_SUPABASE_URL = 'https://lcwspuljhgozqkhvkpdq.supabase.co';
+const CANONICAL_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxjd3NwdWxqaGdvenFraHZrcGRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1Nzc4MTEsImV4cCI6MjEwNTE1MzgxMX0.rUsrFBis7rq7nEGxx40c3a0RJLQ-EK-p8RfjeDFxZ-I';
 
-export const isSupabaseConfigured = Boolean(
-  envUrl &&
-  envKey &&
-  !envUrl.includes('your_supabase') &&
-  !envUrl.includes('your-project') &&
-  !envKey.includes('your_supabase') &&
-  !envKey.includes('your-supabase-anon-key')
+const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const rawKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)?.trim();
+
+const isExplicitValidUrl = Boolean(
+  rawUrl &&
+  !rawUrl.includes('your_supabase') &&
+  !rawUrl.includes('your-project') &&
+  !rawUrl.includes('placeholder')
 );
 
-if (!isSupabaseConfigured) {
-  console.warn(
-    '[StockIN Supabase] Active Supabase credentials not detected in .env. ' +
-    'Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to connect your live Supabase backend.'
-  );
-}
+const isExplicitValidKey = Boolean(
+  rawKey &&
+  !rawKey.includes('your_supabase') &&
+  !rawKey.includes('your-supabase-anon-key') &&
+  !rawKey.includes('placeholder')
+);
 
-// Fallback values prevent runtime crash if env variables are empty during initial setup
-const supabaseUrl = isSupabaseConfigured ? envUrl! : 'https://placeholder-stockin.supabase.co';
-const supabaseAnonKey = isSupabaseConfigured ? envKey! : 'placeholder-anon-key';
+// Fallback to canonical production credentials if environment variables are not injected by host (e.g. Vercel)
+export const supabaseUrl = isExplicitValidUrl ? rawUrl! : CANONICAL_SUPABASE_URL;
+export const supabaseAnonKey = isExplicitValidKey ? rawKey! : CANONICAL_SUPABASE_ANON_KEY;
+
+export const isSupabaseConfigured = true;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

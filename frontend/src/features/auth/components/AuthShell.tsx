@@ -15,42 +15,37 @@ export const AuthShell: React.FC<AuthShellProps> = ({
   panelSubtitle = 'StockIN Business Suite',
 }) => {
   return (
-    <div className="min-h-screen bg-[#F3F2F8] text-slate-900 flex items-center justify-center p-3 sm:p-6 lg:p-10 selection:bg-indigo-500/20 selection:text-indigo-700 antialiased">
+    <div className="min-h-screen bg-slate-100/80 text-slate-900 flex items-center justify-center p-3 sm:p-6 lg:p-8 selection:bg-blue-600 selection:text-white antialiased">
       {/* Outer Card */}
       <div
-        className={`relative z-10 w-full ${cardMaxWidth} bg-white rounded-[28px] sm:rounded-[36px] shadow-[0_25px_70px_rgba(79,70,229,0.12),0_10px_30px_rgba(0,0,0,0.03)] border border-slate-100/90 p-3 sm:p-4 lg:p-4 grid grid-cols-1 lg:grid-cols-12 overflow-hidden gap-4 lg:gap-8`}
+        className={`relative z-10 w-full ${cardMaxWidth} bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/80 p-3 sm:p-4 lg:p-5 grid grid-cols-1 lg:grid-cols-12 overflow-hidden gap-4 lg:gap-8`}
       >
-        {/* Left: Aesthetic Violet/Indigo/Cyan Mesh Gradient Panel */}
-        <div
-          className="lg:col-span-5 rounded-[22px] sm:rounded-[28px] p-7 sm:p-9 lg:p-10 flex flex-col justify-between text-white relative overflow-hidden min-h-[300px] lg:min-h-[580px] shadow-inner"
-          style={{
-            background: `
-              radial-gradient(circle at 88% 25%, rgba(216, 180, 254, 0.95) 0%, rgba(192, 132, 252, 0.6) 28%, transparent 58%),
-              radial-gradient(circle at 12% 12%, rgba(56, 189, 248, 0.95) 0%, rgba(37, 99, 235, 0.85) 32%, transparent 62%),
-              radial-gradient(circle at 20% 88%, rgba(26, 20, 68, 0.98) 0%, rgba(49, 46, 129, 0.85) 42%, transparent 72%),
-              radial-gradient(circle at 82% 82%, rgba(168, 85, 247, 0.75) 0%, transparent 55%),
-              linear-gradient(145deg, #1d4ed8 0%, #3730a3 38%, #581c87 75%, #6b21a8 100%)
-            `,
-          }}
-        >
-          {/* Subtle smooth blur overlay for silky gradient transition */}
-          <div className="absolute inset-0 backdrop-blur-[1px] pointer-events-none" />
+        {/* Left: Professional Architectural Navy Panel */}
+        <div className="lg:col-span-5 rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-9 flex flex-col justify-between text-white relative overflow-hidden min-h-[300px] lg:min-h-[560px] bg-slate-900 border border-slate-800">
+          {/* Subtle architectural background texture */}
+          <div
+            className="absolute inset-0 opacity-[0.07] pointer-events-none"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)`,
+              backgroundSize: '24px 24px',
+            }}
+          />
 
-          {/* Top Left: Real StockIN Brand Logo */}
+          {/* Top Left: StockIN Brand Logo */}
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-black/20 shrink-0 bg-blue-600/30 border border-white/25 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl overflow-hidden shadow-sm shrink-0 bg-blue-600 flex items-center justify-center border border-white/20">
                 <img src="/logo.png" alt="StockIN" className="w-full h-full object-cover" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5 leading-none">
-                  <span className="text-lg font-black tracking-tight text-white drop-shadow-xs">StockIN</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-100 bg-white/20 px-1.5 py-0.5 rounded-full border border-white/20 backdrop-blur-xs">
+                  <span className="text-base font-extrabold tracking-tight text-white">StockIN</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-200 bg-blue-900/60 px-1.5 py-0.5 rounded border border-blue-700/60">
                     PRO
                   </span>
                 </div>
-                <p className="text-[10px] font-semibold text-blue-100/80 tracking-wide uppercase mt-0.5">
-                  Inventory & Business
+                <p className="text-[10px] font-medium text-slate-400 tracking-wide uppercase mt-1">
+                  Inventory & Invoicing Suite
                 </p>
               </div>
             </div>
@@ -58,48 +53,48 @@ export const AuthShell: React.FC<AuthShellProps> = ({
 
           {/* Bottom Left: StockIN Value Proposition */}
           <div className="relative z-10 mt-auto pt-8">
-            <p className="text-xs sm:text-[13px] font-medium text-white/75 tracking-wide mb-2">
+            <p className="text-xs font-semibold text-blue-400 tracking-wide uppercase mb-2">
               {panelSubtitle}
             </p>
-            <h2 className="text-2xl sm:text-[25px] lg:text-[27px] font-bold text-white leading-snug tracking-tight drop-shadow-xs mb-5">
+            <h2 className="text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight mb-6">
               {panelHeadline}
             </h2>
 
             {/* Feature checklist */}
-            <div className="hidden sm:block space-y-2.5 pt-1">
-              <div className="flex items-center gap-2.5 text-xs sm:text-[13px] text-white/90 font-medium">
-                <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
-                  <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+            <div className="hidden sm:block space-y-3 pt-1">
+              <div className="flex items-center gap-2.5 text-xs text-slate-200 font-medium">
+                <div className="w-4 h-4 rounded-full bg-blue-950 flex items-center justify-center shrink-0 border border-blue-500/40 text-blue-400">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span>Inventory & Stock Tracking</span>
+                <span>Live Warehouse Inventory & Stock Movements</span>
               </div>
-              <div className="flex items-center gap-2.5 text-xs sm:text-[13px] text-white/90 font-medium">
-                <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
-                  <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+              <div className="flex items-center gap-2.5 text-xs text-slate-200 font-medium">
+                <div className="w-4 h-4 rounded-full bg-blue-950 flex items-center justify-center shrink-0 border border-blue-500/40 text-blue-400">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span>GST Billing & Quotations</span>
+                <span>GST Tax Invoicing & Vector PDF Generation</span>
               </div>
-              <div className="flex items-center gap-2.5 text-xs sm:text-[13px] text-white/90 font-medium">
-                <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
-                  <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+              <div className="flex items-center gap-2.5 text-xs text-slate-200 font-medium">
+                <div className="w-4 h-4 rounded-full bg-blue-950 flex items-center justify-center shrink-0 border border-blue-500/40 text-blue-400">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span>Customer & Supplier Ledgers</span>
+                <span>Customer Ledgers & Quotation Conversions</span>
               </div>
             </div>
 
             {/* Bottom Security Badge */}
-            <div className="pt-5 mt-5 border-t border-white/15 flex items-center justify-between text-xs text-white/75">
+            <div className="pt-5 mt-6 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
               <span className="flex items-center gap-1.5 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-                Enterprise Cloud Security
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                Row-Level Security Architecture
               </span>
-              <span className="text-white/60 font-mono text-[11px]">v3.2</span>
+              <span className="text-slate-500 font-mono text-[11px]">v3.2</span>
             </div>
           </div>
         </div>
 
         {/* Right: Authentication Form Area */}
-        <div className="lg:col-span-7 flex flex-col justify-center px-3 sm:px-8 lg:px-12 py-5 sm:py-8">
+        <div className="lg:col-span-7 flex flex-col justify-center px-3 sm:px-8 lg:px-10 py-5 sm:py-8">
           {children}
         </div>
       </div>

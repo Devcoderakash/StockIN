@@ -142,60 +142,60 @@ export const StockInPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <div className="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] sm:text-xs font-medium text-slate-500 truncate">Total Inward Units</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1">
+            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Total Inward Units</p>
+            <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 tabular-nums">
               {totalInwardUnits.toLocaleString('en-IN')}
             </p>
             <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-600 inline-flex items-center gap-1 mt-0.5 sm:mt-1 truncate">
               <TrendingUp className="w-3 h-3 shrink-0" /> Cumulative intake
             </span>
           </div>
-          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 ml-2">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 ml-2">
             <PackagePlus className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
 
         <div className="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] sm:text-xs font-medium text-slate-500 truncate">Intake Valuation</p>
-            <p className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1 truncate">
+            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Intake Valuation</p>
+            <p className="text-lg sm:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 truncate tabular-nums">
               {formatCurrency(totalInwardValuation)}
             </p>
-            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 inline-flex items-center gap-1 mt-0.5 sm:mt-1 truncate">
+            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 inline-flex items-center gap-1 mt-0.5 sm:mt-1 truncate">
               At buying rates
             </span>
           </div>
-          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 ml-2">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 ml-2">
             <Boxes className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
 
         <div className="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] sm:text-xs font-medium text-slate-500 truncate">Products Restocked</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1">
+            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Products Restocked</p>
+            <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 tabular-nums">
               {uniqueProductsRestocked}
             </p>
-            <span className="text-[10px] sm:text-[11px] font-semibold text-blue-600 inline-flex items-center gap-1 mt-0.5 sm:mt-1 truncate">
+            <span className="text-[10px] sm:text-[11px] font-medium text-blue-600 inline-flex items-center gap-1 mt-0.5 sm:mt-1 truncate">
               Unique items
             </span>
           </div>
-          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0 ml-2">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 ml-2">
             <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
 
         <div className="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] sm:text-xs font-medium text-slate-500 truncate">Total Intake Records</p>
-            <p className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1">
+            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">Total Intake Records</p>
+            <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 sm:mt-1 tabular-nums">
               {stockInMovements.length}
             </p>
-            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 inline-flex items-center gap-1 mt-0.5 sm:mt-1 truncate">
+            <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 inline-flex items-center gap-1 mt-0.5 sm:mt-1 truncate">
               Audit trail logged
             </span>
           </div>
-          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 shrink-0 ml-2">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shrink-0 ml-2">
             <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>

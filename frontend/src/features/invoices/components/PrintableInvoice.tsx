@@ -63,7 +63,8 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
       } else {
         showToast('Storage Notice', result.error || 'Upload could not complete.', 'warning');
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error('[PrintableInvoice] upload error:', err);
       showToast('Storage Error', 'Failed to store document in Supabase Storage.', 'error');
     } finally {
       setIsSyncingStorage(false);

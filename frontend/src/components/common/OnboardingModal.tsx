@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppState } from '@/context/AppStateContext';
-import { Boxes, Sparkles, Building2, Phone, Mail, MapPin, FileText, ArrowRight } from 'lucide-react';
+import { Boxes, Building2, Phone, Mail, MapPin, FileText, ArrowRight } from 'lucide-react';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -63,22 +63,21 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
-        {/* Banner Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-6 text-white text-left relative overflow-hidden">
-          <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-none flex items-center justify-center shadow-inner">
-              <Boxes className="w-5 h-5 text-white" />
+      <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+        {/* Modal Header */}
+        <div className="bg-slate-900 p-6 text-white text-left relative overflow-hidden border-b border-slate-800">
+          <div className="flex items-center gap-3.5 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-500/40 flex items-center justify-center shrink-0">
+              <Boxes className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-200 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Initial Setup
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
+                Initial Workspace Setup
               </span>
-              <h2 className="text-xl font-black tracking-tight">Welcome to StockIN</h2>
+              <h2 className="text-xl font-bold tracking-tight text-white">Welcome to StockIN</h2>
             </div>
           </div>
-          <p className="text-xs text-blue-100 mt-1 max-w-md">
+          <p className="text-xs text-slate-300 mt-1 max-w-md leading-relaxed">
             Configure your business profile to start managing warehouse inventory, issuing GST invoices, and tracking customer payments.
           </p>
         </div>

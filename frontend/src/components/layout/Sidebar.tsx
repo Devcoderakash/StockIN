@@ -13,7 +13,6 @@ import {
   BarChart3,
   History,
   Settings,
-  Zap,
   ChevronLeft,
   ChevronRight,
   X,
@@ -122,8 +121,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={onCloseMobile}
           className="flex items-center gap-3 overflow-hidden group"
         >
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs shrink-0 group-hover:bg-blue-700 transition-colors">
-            <Zap className="w-5 h-5 fill-white text-white" />
+          <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200/80 shadow-2xs shrink-0 flex items-center justify-center bg-blue-600">
+            <img src="/logo.png" alt="StockIN" className="w-full h-full object-cover" />
           </div>
           {!isCollapsed && (
             <div className="leading-tight truncate">
@@ -222,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             isCollapsed ? 'justify-center p-1' : ''
           }`}
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-700 to-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+          <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 border border-slate-800 shadow-2xs">
             {(settings.businessName || businessName || 'SI').slice(0, 2).toUpperCase()}
           </div>
           {!isCollapsed && (

@@ -24,8 +24,6 @@ import {
   Receipt,
   Users,
   Boxes,
-  ArrowDownRight,
-  ArrowUpRight,
   Layers,
   FileSpreadsheet,
 } from 'lucide-react';
@@ -159,9 +157,6 @@ export const ReportsPage: React.FC = () => {
   const totalStockOutUnits = filteredStockMovements
     .filter((m) => m.type === 'stock_out')
     .reduce((sum, m) => sum + Math.abs(m.quantity), 0);
-  const totalAdjustments = filteredStockMovements
-    .filter((m) => m.type === 'adjustment' || m.type === 'return')
-    .reduce((sum, m) => sum + m.quantity, 0);
 
   // GST Breakdown by slab
   const gstBreakdown = useMemo(() => {
